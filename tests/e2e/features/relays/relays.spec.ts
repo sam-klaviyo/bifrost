@@ -36,6 +36,12 @@ test.describe("Relays", () => {
     await page.select(name);
     await expect(page.editor).toBeVisible();
 
+    // The header names the relay and summarizes how callers reach it.
+    await expect(page.page.getByTestId("relay-title")).toHaveText(name);
+    await expect(page.page.getByTestId("relay-detail-gateway")).toContainText(`/relay/${name}`);
+    await expect(page.page.getByTestId("relay-detail-upstream")).toContainText("https://api.example.com");
+    await expect(page.page.getByTestId("relay-routes-count")).toHaveText("0");
+
     // Endpoint-level pricing lives on the General tab of the config sheet.
     await page.openConfigTab("general");
     await page.page.getByTestId("relay-usage-cost-per-request").fill("0.001");
@@ -413,6 +419,8 @@ test.describe("Relays", () => {
       await page.select(name);
 
       await page.page.getByTestId("relay-routes-import").click();
+      // The import opens in a side panel, not a modal dialog.
+      await expect(page.page.getByTestId("relay-openapi-sheet")).toBeVisible();
       await page.page.getByTestId("openapi-spec-source-tab-url").click();
       const url = page.page.getByTestId("openapi-spec-url-input");
 
@@ -446,6 +454,7 @@ test.describe("Relays", () => {
       await expect(preview).toContainText("2 routes");
       await expect(preview).toContainText(`http://127.0.0.1:${port}/v1`);
       await page.page.getByTestId("relay-openapi-import").click();
+      await expect(page.page.getByTestId("relay-openapi-sheet")).toBeHidden();
 
       // The import is staged for review before it replaces the routes.
       await page.page.getByRole("button", { name: "Apply import" }).click();
