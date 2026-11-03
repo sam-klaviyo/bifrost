@@ -5298,6 +5298,9 @@ func (s *RDBConfigStore) GetVirtualMCPsPaginated(ctx context.Context, params Vir
 	if params.Search != "" {
 		q = q.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(params.Search)+"%")
 	}
+	if params.MCPClientID != "" {
+		q = q.Where(`tools LIKE ? ESCAPE '\'`, virtualMCPToolsClientPattern(params.MCPClientID))
+	}
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -5312,6 +5315,20 @@ func (s *RDBConfigStore) GetVirtualMCPsPaginated(ctx context.Context, params Vir
 		return nil, 0, err
 	}
 	return defs, total, nil
+}
+
+// virtualMCPToolsClientPattern is the LIKE pattern, used with ESCAPE '\', that matches a Virtual MCP
+// whose tools column names clientID as a spec's mcp_client_id. The column holds the encoding/json
+// output of BeforeSave, so the needle is encoded the same way: the key and the quoted id together
+// match only that exact id, never a prefix of a longer id or a tool name that happens to equal it.
+// LIKE metacharacters (and the backslashes encoding/json emits for &, <, >) are escaped so they
+// match literally on every dialect.
+func virtualMCPToolsClientPattern(clientID string) string {
+	encoded, err := json.Marshal(clientID)
+	if err != nil {
+		encoded = []byte(`"` + clientID + `"`)
+	}
+	return "%" + virtualKeyMetadataLikeEscaper.Replace(`"mcp_client_id":`+string(encoded)) + "%"
 }
 
 // UpdateVirtualMCP persists a Virtual MCP, keeping endpoint_slug and created_at immutable. Name
