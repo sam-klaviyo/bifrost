@@ -21,6 +21,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { IS_ENTERPRISE } from "@/lib/constants/config";
 import { useBranding } from "@/lib/hooks/useBranding";
 import { useGetCoreConfigQuery, useGetLatestReleaseQuery, useGetVersionQuery, useIsAuthEnabledQuery } from "@/lib/store";
+import { withBasePath } from "@/lib/utils/basePath";
 import PoweredByBifrost from "@enterprise/components/branding/poweredByBifrost";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
@@ -28,13 +29,11 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCookies } from "react-cookie";
 import { Trans, useTranslation } from "react-i18next";
-import { modKeyLabel } from "./commandPalette/commandPalette.utils";
 import { useCommandPalette } from "./commandPalette/commandPaletteProvider";
 import { preserveTimeFilters } from "./navigation/navItem";
 import { getNavItemHref, type NavItem, useNavItems } from "./navigation/navItems";
 import { Badge } from "./ui/badge";
 import { PromoCardStack } from "./ui/promoCardStack";
-import { withBasePath } from "@/lib/utils/basePath";
 
 // Cookie name for dismissing production setup card
 const PRODUCTION_SETUP_DISMISSED_COOKIE = "bifrost_production_setup_dismissed";
@@ -128,15 +127,14 @@ const NavItemView = ({
 
 	const isHighlighted = !hasSubItems && highlightedUrl === item.url;
 
-	const buttonClassName = `group/nav-item relative h-7 cursor-pointer rounded-sm border px-2 transition-all duration-200 ${
-		isHighlighted
+	const buttonClassName = `group/nav-item relative h-7 cursor-pointer rounded-sm border px-2 transition-all duration-200 ${isHighlighted
 			? "bg-sidebar-accent text-accent-foreground border-primary/20"
 			: isActive || isAnySubItemActive
 				? "bg-sidebar-accent text-primary border-primary/20"
 				: item.hasAccess
 					? "hover:bg-sidebar-accent hover:text-accent-foreground border-transparent text-slate-600 dark:text-zinc-400"
 					: "hover:bg-destructive/5 hover:text-muted-foreground text-muted-foreground cursor-not-allowed border-transparent"
-	} `;
+		} `;
 
 	const innerContent = (
 		<div className="flex w-full min-w-0 items-center justify-between">
@@ -310,15 +308,14 @@ const NavItemView = ({
 						const isSubItemActive = subItem.queryParam ? pathname === subItem.url : isRouteMatch(subItem.url);
 						const isSubItemHighlighted = highlightedUrl ? subItemHref.startsWith(highlightedUrl) : false;
 						const SubItemIcon = subItem.icon;
-						const subItemClassName = `h-7 cursor-pointer rounded-sm px-2 transition-all duration-200 ${
-							isSubItemHighlighted
+						const subItemClassName = `h-7 cursor-pointer rounded-sm px-2 transition-all duration-200 ${isSubItemHighlighted
 								? "bg-sidebar-accent text-accent-foreground"
 								: isSubItemActive
 									? "bg-sidebar-accent text-primary font-medium"
 									: subItem.hasAccess === false
 										? "hover:bg-destructive/5 hover:text-muted-foreground text-muted-foreground cursor-not-allowed border-transparent"
 										: "hover:bg-sidebar-accent hover:text-accent-foreground text-slate-600 dark:text-zinc-400"
-						}`;
+							}`;
 						const subInner = (
 							<div className="flex w-full min-w-0 items-center gap-2.5">
 								{SubItemIcon && <SubItemIcon className={`h-3.5 w-3.5 shrink-0 ${isSubItemActive ? "stroke-2" : "stroke-[1.5]"}`} />}
@@ -896,18 +893,6 @@ export default function AppSidebar() {
 						onKeyDown={handleSearchKeyDown}
 						className="border-input text-foreground placeholder:text-shadow-muted-foreground focus:ring-ring h-8 w-full rounded-sm border bg-transparent pr-14 pl-8 text-sm outline-none focus:bg-transparent"
 					/>
-					{/* ⌘K belongs to the command palette now; the chip opens it so the shortcut stays discoverable. */}
-					<button
-						type="button"
-						data-testid="sidebar-command-palette-trigger"
-						aria-label={t("commandPalette.openHint")}
-						title={t("commandPalette.openHint")}
-						onClick={() => setCommandPaletteOpen(true)}
-						className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex -translate-y-1/2 cursor-pointer gap-0.5 text-[10px]"
-					>
-						<kbd className="border-border bg-muted rounded-sm px-1 font-mono shadow-sm">{modKeyLabel()}</kbd>
-						<kbd className="border-border bg-muted rounded-sm px-1 font-mono shadow-sm">K</kbd>
-					</button>
 				</div>
 			</div>
 			<SidebarContent className="overflow-hidden">
